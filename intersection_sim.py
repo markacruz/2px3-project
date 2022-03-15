@@ -73,8 +73,7 @@ class Simulation:
         Each road is represented as a list of waiting cars. You may
         want to consider making a "road" a class.
         """
-        self.north, self.east, self.south, self.west = [], [], [], []
-        self.north_ready = False
+        self.east, self.south, self.west = [], [], []
         self.east_ready = False
         self.south_ready = False
         self.west_ready = False
@@ -121,9 +120,7 @@ class Simulation:
                 self.east_ready = False
         
             #Carry on to other direction waitlists
-            if self.north_ready:
-                self.depart_from(N)
-            elif self.west_ready:
+            if self.west_ready:
                 self.depart_from(W)
             elif self.south_ready:
                 self.depart_from(S)
@@ -141,8 +138,6 @@ class Simulation:
             #Carry on to other direction waitlists
             if self.east_ready:
                 self.depart_from(E)
-            elif self.north_ready:
-                self.depart_from(N)
             elif self.west_ready:
                 self.depart_from(W)
             elif self.south_ready:
@@ -161,8 +156,6 @@ class Simulation:
                 self.depart_from(S)
             elif self.east_ready:
                 self.depart_from(E)
-            elif self.north_ready:
-                self.depart_from(N)
             elif self.west_ready:
                 self.depart_from(W)
             else:
@@ -171,8 +164,6 @@ class Simulation:
     #Create departure event for the first driver from the queue in the passed direction
     def depart_from(self, direction):
         
-        #Make departure event for first car in North queue
-
         #Make departure event for first car in East queue 
         if direction == E:
             clear_time = self.clock + self.east[0].get_clear_time()
