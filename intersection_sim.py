@@ -1,34 +1,19 @@
 import random
 
-"""
-2PX3 Intersection Simulation Starting Code 
-
-Simulation for a "cautious" intersection. Modelling choices:
-1) A vehicles arrives from N, E, S, or W and must wait for other cars
-ahead of them to clear the intersection.
-2) Only one car can be "clearing" the intersection at once. 
-3) Before a car can begin to clear the intersection, it must come to a stop
-4) Cars will clear the intersection in a one-at-a-time counter-clockwise manner
-
-Dr. Vincent Maccio 2022-02-01 
-"""
-
 #Constants
 ARRIVAL = "Arrival"
 DEPARTURE = "Departure"
 STOP = "Stop"
-
 E = "East"
 S = "South"
 W = "West"
-MEAN_ARRIVAL_TIME = random.randint(1, 30)
-#print("mat = ", MEAN_ARRIVAL_TIME)
+MEAN_ARRIVAL_TIME = random.randint(10, 15)
 PRINT_EVENTS = True
 
 class Driver:
 
-    stop_time = random.randint(3, 6) # Randomized Stop time
-    clear_time = random.randint(10, 15) # Randomized clear time
+    stop_time = random.randint(3, 6)
+    clear_time = random.randint(6, 10)
 
     def __init__(self, name, arrival_time):
         self.name = name
@@ -88,7 +73,8 @@ class Simulation:
         Each road is represented as a list of waiting cars. You may
         want to consider making a "road" a class.
         """
-        self.east, self.south, self.west = [], [], []
+        self.north, self.east, self.south, self.west = [], [], [], []
+        self.north_ready = False
         self.east_ready = False
         self.south_ready = False
         self.west_ready = False
@@ -127,23 +113,6 @@ class Simulation:
             print(str(self.clock)+ ": A driver from the " + event.direction + " has cleared the intersection.")
 
         #Lots of "traffic logic" below. It's just a counter-clockwise round-robin.
-        # if event.direction == N:
-            
-        #     #No drivers left to depart from the North
-        #     if self.north == []:
-        #         self.north_ready = False
-        
-        #     #Carry on to other direction waitlists
-        #     if self.west_ready:
-        #         self.depart_from(W)
-        #     elif self.south_ready:
-        #         self.depart_from(S)
-        #     elif self.east_ready:
-        #         self.depart_from(E)
-        #     elif self.north_ready:
-        #         self.depart_from(N)
-        #     else:
-        #         self.intersection_free = True
 
         if event.direction == E:
 
@@ -172,8 +141,8 @@ class Simulation:
             #Carry on to other direction waitlists
             if self.east_ready:
                 self.depart_from(E)
-            # elif self.north_ready:
-            #     self.depart_from(N)
+            elif self.north_ready:
+                self.depart_from(N)
             elif self.west_ready:
                 self.depart_from(W)
             elif self.south_ready:
@@ -192,8 +161,8 @@ class Simulation:
                 self.depart_from(S)
             elif self.east_ready:
                 self.depart_from(E)
-            # elif self.north_ready:
-            #     self.depart_from(N)
+            elif self.north_ready:
+                self.depart_from(N)
             elif self.west_ready:
                 self.depart_from(W)
             else:
@@ -203,10 +172,6 @@ class Simulation:
     def depart_from(self, direction):
         
         #Make departure event for first car in North queue
-        # if direction == N:
-        #     clear_time = self.clock + self.north[0].get_clear_time()
-        #     new_event = Event(DEPARTURE, clear_time, N)
-        #     driver = self.north.pop(0) #Car progessing into the intersection
 
         #Make departure event for first car in East queue 
         if direction == E:
@@ -234,11 +199,6 @@ class Simulation:
     def execute_stop(self, event):
         if self.print_events:
             print(str(self.clock)+ ": A driver from the " + event.direction + " has stopped.")
-        
-        # if event.direction == N:
-        #     self.north_ready = True
-        #     if self.intersection_free:
-        #         self.depart_from(N)
 
         if event.direction == E:
             self.east_ready = True
@@ -260,15 +220,8 @@ class Simulation:
         driver = Driver(self.num_of_arrivals, self.clock)
         if self.print_events:
             print(str(self.clock)+ ": A driver arrives from the " + event.direction + ".")
-
-        # if event.direction == N:
-        #     if self.north == []: #Car needs to stop before clearing
-        #         self.north_ready = False
-        #     self.north.append(driver)
-        #     new_event = Event(STOP, self.clock + driver.get_stop_time(), N)
-        #     self.events.add_event(new_event)
             
-        elif event.direction == E:
+        if event.direction == E:
             if self.east == []: #Car needs to stop before clearing
                 self.east_ready = False
             self.east.append(driver)
@@ -298,6 +251,7 @@ class Simulation:
         time = self.clock + inter_arrival_time
         
         r = random.random()
+        #Equally likely to arrive from each direction
         if r < (1/3):
             self.events.add_event(Event(ARRIVAL, time, E))
         elif r < (2/3):
