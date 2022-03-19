@@ -108,8 +108,28 @@ class Simulation:
 
     #Driver leaving intersection event
     def execute_departure(self, event):
+
         if self.print_events:
-            print(str(self.clock)+ ": A driver from the " + event.direction + " has cleared the intersection.")
+            clear_direction = ""
+            generate_random = random.randint(0,1)
+            
+            if event.direction == E:
+                if generate_random == 0:
+                    clear_direction = 'West'
+                else:
+                    clear_direction = 'South'
+            elif event.direction == W:
+                if generate_random == 0:
+                    clear_direction = 'East'
+                else:
+                    clear_direction = 'South'
+            else:
+                if generate_random == 0:
+                    clear_direction = 'West'
+                else:
+                    clear_direction = 'East'
+                    
+            print(str(self.clock)+ ": A driver from the " + event.direction + " has cleared the intersection going " + clear_direction + ".")
 
         #Lots of "traffic logic" below. It's just a counter-clockwise round-robin.
 
@@ -257,7 +277,7 @@ class Simulation:
     def generate_report(self):
         #Define a method to generate statistical results based on the time values stored in self.data
         #These could included but are not limited to: mean, variance, quartiles, etc. 
-        print()
+        print(self.data)
         
 
 
