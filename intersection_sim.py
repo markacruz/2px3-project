@@ -1,4 +1,6 @@
-import random
+from asyncio import events
+from asyncio.windows_events import NULL
+import random 
 
 #Constants
 ARRIVAL = "Arrival"
@@ -7,13 +9,13 @@ STOP = "Stop"
 E = "East"
 S = "South"
 W = "West"
-MEAN_ARRIVAL_TIME = random.randint(10, 15)
-PRINT_EVENTS = True
+MEAN_ARRIVAL_TIME = random.randint(10, 20)
+PRINT_EVENTS = False
 
 class Driver:
 
     stop_time = random.randint(3, 6)
-    clear_time = random.randint(6, 10)
+    clear_time = random.randint(5, 10)
 
     def __init__(self, name, arrival_time):
         self.name = name
@@ -27,7 +29,6 @@ class Driver:
     def get_clear_time(self):
         return self.clear_time
 
-
 class Event:
 
     def __init__(self, event_type, time, direction):
@@ -35,6 +36,26 @@ class Event:
         self.time = time
         self.direction = direction 
 
+        clear_direction = ""
+        generate_random = random.randint(0,1)
+                
+        if self.direction == E:
+            if generate_random == 0:
+                clear_direction = 'West'
+            else:
+                clear_direction = 'South'
+        elif self.direction == W:
+            if generate_random == 0:
+                clear_direction = 'East'
+            else:
+                clear_direction = 'South'
+        else:
+            if generate_random == 0:
+                clear_direction = 'West'
+            else:
+                clear_direction = 'East'
+
+        self.clear_direction = clear_direction
 
 class EventQueue:
 
@@ -43,7 +64,7 @@ class EventQueue:
 
     #Add event (will get sent to the back of the queue)
     def add_event(self, event):
-        #print("Adding event: " + event.type + ", clock: " + str(event.time))
+        # print("Adding event: " + event.type + ", clock: " + str(event.time))
         self.events.append(event)
 
     #Get the next event in the queue and pop it (remove it)
@@ -56,9 +77,8 @@ class EventQueue:
                 min_time = self.events[i].time
                 min_index = i
         event = self.events.pop(min_index)
-        #print("Removing event: " + event.type + ", clock: " + str(event.time))
+        # print("Removing event: " + event.type + ", clock: " + str(event.time))
         return event
-
 
 class Simulation:
 
@@ -82,6 +102,8 @@ class Simulation:
         self.generate_arrival()
         self.print_events = PRINT_EVENTS
         self.data = []
+        self.stop_time = []
+        self.clear_time = []
 
     #Enable printing events as the simulation runs
     def enable_print_events(self):
@@ -89,7 +111,7 @@ class Simulation:
     
     #Method that runs the simulation
     def run(self):
-        while self.num_of_arrivals <= self.total_arrivals:
+        while (self.num_of_arrivals <= self.total_arrivals) | (self.events.events != []):
             if self.print_events:
                 self.print_state()
             self.execute_next_event()
@@ -97,6 +119,7 @@ class Simulation:
     #Execute the next event in the queue
     #(Get next event, and execute appropriate method depending on event type)
     def execute_next_event(self):
+        
         event = self.events.get_next_event()
         self.clock = event.time
         if event.type == ARRIVAL:
@@ -110,26 +133,64 @@ class Simulation:
     def execute_departure(self, event):
 
         if self.print_events:
-            clear_direction = ""
-            generate_random = random.randint(0,1)
-            
-            if event.direction == E:
-                if generate_random == 0:
-                    clear_direction = 'West'
-                else:
-                    clear_direction = 'South'
-            elif event.direction == W:
-                if generate_random == 0:
-                    clear_direction = 'East'
-                else:
-                    clear_direction = 'South'
-            else:
-                if generate_random == 0:
-                    clear_direction = 'West'
-                else:
-                    clear_direction = 'East'
+            print(str(self.clock)+ ": A driver from the " + event.direction + " has cleared the intersection going " + event.clear_direction + ".")
+        
+        # smallest_depart_time = 9999999999
+        # next_depart = NULL
+        # empty = len(self.east) == 0 & len(self.west) == 0 & len(self.south) == 0  
+
+        # for i in self.events.events:
+        #     if i.type == STOP:
+        #         if (i.time) < smallest_depart_time:
+        #             next_depart = i.direction
                     
-            print(str(self.clock)+ ": A driver from the " + event.direction + " has cleared the intersection going " + clear_direction + ".")
+        # if event.direction == E:
+
+        #     #No drivers left to depart from the East
+        #     if self.east == []:
+        #         self.east_ready = False
+        
+        #     #Carry on to other direction waitlists
+        #     if (next_depart == W) & (self.west_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == S) & (self.south_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == E) & (self.east_ready == True):
+        #         self.depart_from(next_depart)
+        #     else:
+        #         self.intersection_free = True
+
+        # if event.direction == S:
+
+        #     #No drivers left to depart from the South
+        #     if self.south == []:
+        #         self.south_ready = False
+        
+        #     #Carry on to other direction waitlists
+        #     if (next_depart == W) & (self.west_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == S) & (self.south_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == E) & (self.east_ready == True):
+        #         self.depart_from(next_depart)
+        #     else:
+        #         self.intersection_free = True
+
+        # if event.direction == W:
+
+        #     #No drivers left to depart from the West
+        #     if self.west == []:
+        #         self.west_ready = False
+        
+        #     #Carry on to other direction waitlists
+        #     if (next_depart == W) & (self.west_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == S) & (self.south_ready == True):
+        #         self.depart_from(next_depart)
+        #     elif (next_depart == E) & (self.east_ready == True):
+        #         self.depart_from(next_depart)
+        #     else:
+        #         self.intersection_free = True
 
         #Lots of "traffic logic" below. It's just a counter-clockwise round-robin.
 
@@ -204,6 +265,8 @@ class Simulation:
             
         self.events.add_event(new_event)
         self.intersection_free = False
+        self.stop_time.append(driver.stop_time)
+        self.clear_time.append(driver.clear_time)
         self.data.append(clear_time - driver.arrival_time)
 
     #Stop driver at intersection, and call depart method to add depart event to queue
@@ -253,7 +316,8 @@ class Simulation:
             new_event = Event(STOP, self.clock + driver.get_stop_time(), W)
             self.events.add_event(new_event)
             
-        self.generate_arrival() #Generate the next arrival
+        if (self.num_of_arrivals <= self.total_arrivals):
+            self.generate_arrival() #Generate the next arrival
 
     #Generate a car arriving at the intersection
     def generate_arrival(self):
@@ -277,9 +341,17 @@ class Simulation:
     def generate_report(self):
         #Define a method to generate statistical results based on the time values stored in self.data
         #These could included but are not limited to: mean, variance, quartiles, etc. 
-        print(self.data)
-        
 
+        # print("Avg. Stop Time: " + str(sum(self.stop_time)/len(self.stop_time)) +
+        #  "s, Avg. Clear Time: " + str(sum(self.clear_time)/len(self.clear_time)) + "s")
 
-def average(L):
-    return sum(L)/len(L)
+        mean = sum(self.data)/len(self.data)
+        variance = sum((xi - mean) ** 2 for xi in self.data) / len(self.data)
+
+        return("Mean: " + str(mean) + " seconds")
+
+def run():
+    for x in range(100):
+        sim = Simulation(5)
+        sim.run()
+        print("Simulation " + str(x + 1) + ": " + sim.generate_report())
